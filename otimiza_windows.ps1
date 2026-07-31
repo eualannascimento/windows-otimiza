@@ -46,7 +46,12 @@ function Write-Report($text) {
     $text | Out-File $reportFile -Append -Encoding UTF8
 }
 function Write-Revert($text) {
-    $text | Out-File $revertFile -Append -Encoding UTF8
+    $entry = [ordered]@{
+        timestamp = (Get-Date).ToUniversalTime().ToString("o")
+        message = [string]$text
+        scope = "HKCU ou arquivos do usuário"
+    }
+    ($entry | ConvertTo-Json -Compress) | Out-File $revertFile -Append -Encoding UTF8
 }
 function Is-Protected($text) {
     foreach ($kw in $protectedKeywords) {
@@ -130,6 +135,7 @@ if ($Apply) {
     try {
         Clear-RecycleBin -Force -ErrorAction Stop
         Write-Report "Lixeira esvaziada."
+        Write-Revert "Lixeira esvaziada; ação não reversível, sem arquivos do sistema afetados."
     } catch {
         Write-Report "Nao foi possivel esvaziar a lixeira: $_"
     }
